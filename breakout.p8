@@ -4,21 +4,6 @@ __lua__
 function _init()
  g=gm:new()
  w=wall:new()
- 
- -- do something 1000x
- -- every 60 frames
- add(g.act, cocreate(
-  function()
-   local n=1
-   for i=1,1000 do
-    --printh(n)
-    n+=1
-    for j=1,60 do
-     yield()
-    end
-   end
-  end
- ))
 end
 
 function kick()
@@ -28,8 +13,8 @@ function kick()
  b=ball:new(
   vector:new(0,0),       -- pos
   vector:new(
-    rnd(1.5),        -- speed x
-   -rnd(2.5)-0.2),   -- speed y
+   rnd(2)-1,         -- speed x
+   -2.0),            -- speed y
   2,6,true) -- size,color,stick
 end
 
@@ -356,6 +341,7 @@ function gm:new()
   lives=3,
   points=0,
   act={},
+  pu=nil, -- powerup type
   fun={
    draw={
    init=function() draw_init() end,
@@ -378,12 +364,36 @@ function gm:new()
  return setmetatable(prop,meta)
 end
 
+function gm:set_powerup(p)
+  printh("powerup: "..p)
+  if p==5 then
+   g.lives+=1
+  end
+  if p==6 then
+   b.stick=true
+  end
+  self.pu=p
+  add(g.act, cocreate(
+  function()
+   for i=1,pu_type[self.pu][t] do
+    for j=1,60 do
+     yield()
+    end
+   end
+   printh("powerdown: "..p)
+   self.pu=nil
+  end
+  ))
+end
+
 function gm:miss()
 	sfx(0)
  self.lives-=1
  if self.lives<=0 then
   self.state="lost"
  else
+  w.pi={}
+  self.pu={}
   kick()
  end
 end
@@ -477,9 +487,29 @@ function pill:chk_paddle()
              8,6):collide(p.box) then
    self.a=false
    sfx(10)
+   g:set_powerup(self.s)
+   --[[
+   4  slowdown
+   5  life
+   6  catch
+   7  expand
+   8  reduce
+   9  megaball
+   10 multiball
+   ]]--
   end
  end   
 end
+
+pu_type = {
+	[4] ={[t]=10},
+	[5] ={[t]=0},
+	[6] ={[t]=0},
+	[7] ={[t]=0},
+	[8] ={[t]=0},
+	[9] ={[t]=0},
+ [10]={[t]=0},
+}
 
 wall = {}
 
