@@ -228,7 +228,7 @@ end
 function ball:chk_paddle()
  if self:collide(p.box)
  then
-  if g.pu==6 then
+  if g.pu==6 then --catch
    self.stick=true
   else
    self.speed.y=-self.speed.y
@@ -308,6 +308,13 @@ function paddle:new(box,ax,f,col)
 end
 
 function paddle:update()
+ self.box.w=22
+ if g.pu==7 then --expand
+  self.box.w=30
+ end
+ if g.pu==8 then --reduce
+  self.box.w=15
+ end
  local a=false
  if btn(0) then
   self.dx-=self.ax
@@ -409,7 +416,7 @@ end
 gm.plan={
 -- 1
 {
-{ 5,5,5,5,5,5,5,5,5,5,5,5,5,},
+  { 5,5,5,5,5,5,5,5,5,5,5,5,5,},
 --{ 4,4,4,4,4,4,4,4,4,4,4,4,4,},
 --{ 1,1,1,1,1,1,4,1,1,1,1,1,1,},
 --{ 0,1,0,2,0,3,0,4,0,5,0,0,0,},
@@ -513,8 +520,8 @@ pu_type = {
 	[4] ={[t]=10},
 	[5] ={[t]=0},
 	[6] ={[t]=10},
-	[7] ={[t]=0},
-	[8] ={[t]=0},
+	[7] ={[t]=10},
+	[8] ={[t]=10},
 	[9] ={[t]=0},
  [10]={[t]=0},
 }
@@ -636,16 +643,20 @@ end
 
 function hit(b)
  b.a=false
-	if w:empty() and g.state=="game" then
-	 g.state="lup" -- level up
-	end
+ if w:empty() and g.state=="game" then
+  g.state="lup" -- level up
+ end
 end
 
 function hit_n(b)
  hit(b)
- g.points+=b.t.point+w.seqhit
-	w.seqhit+=1
-	sfx(mid(2,w.seqhit,8))
+ local pt=b.t.point
+ if g.pu==8 then --reduce
+  pt*=2
+ end
+ g.points+=pt+w.seqhit
+ w.seqhit+=1
+ sfx(mid(2,w.seqhit,8))
 end
 
 function hit_i(b)
@@ -653,13 +664,13 @@ function hit_i(b)
 end
 
 function hit_h(b)
-	sfx(9)
-	b.t=brick_types[1]
+ sfx(9)
+ b.t=brick_types[1]
 end
 
 function hit_e(b)
-	hit(b)
-	sfx(2)
+ hit(b)
+ sfx(2)
  add(g.act, cocreate(
   function()
    for p in all(w:proxi(b)) do
@@ -673,14 +684,14 @@ function hit_e(b)
 end
 
 function hit_p(b)
-	hit(b)
+	hit_n(b)
 	sfx(2)
  -- trigger powerup
  add(w.pi,pill:new(
   vector:new(b.box.x,b.box.y),
   vector:new(0,0.4),
   --flr(rnd(7))+4)) -- 4..10
-  6))
+  8))
 end
 
 brick_types={
