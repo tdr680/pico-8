@@ -13,9 +13,10 @@ function kick()
  b=ball:new(
   vector:new(0,0),       -- pos
   vector:new(
-   rnd(2)-1,         -- speed x
-   -2.0),            -- speed y
-  2,6,true) -- size,color,stick
+  rnd(2)-1,          -- speed x
+  -2.0),             -- speed y
+  2,6,true, -- size,color,stick
+  p.box.x+p.box.w/2) -- stick_x
 end
 
 function _update60()
@@ -171,13 +172,14 @@ end
 -->8
 ball = {}
 
-function ball:new(pos,speed,size,col,stick)
+function ball:new(pos,speed,size,col,stick,stick_x)
  local prop={
   pos=pos,
   speed=speed,
   size=size,
   col=col,
   stick=stick,
+  stick_x=stick_x,
   ang=1} -- 1:norm,2:raise,0:flatten
  local meta={
  __index=ball
@@ -187,13 +189,14 @@ end
 
 function ball:update()
  if self.stick then
-  self.pos.x=p.box.x+p.box.w/2
+  self.pos.x=self.stick_x
   self.pos.y=p.box.y-self.size-1
   self.speed.x+=p.dx/10
+  self.speed.y=-2.0
   self.speed:limit(3)
   --self.speed.x=mid(
   if btnp(4) then
-   self.stick=false
+   self.stick=nil
   end
  else
 	 self:chk_border()
@@ -225,15 +228,19 @@ end
 function ball:chk_paddle()
  if self:collide(p.box)
  then
-  self.speed.y=-self.speed.y
-  self.pos.y=p.box.y-self.size
-  if abs(p.dx)>2 then
-   if sign(self.speed.x)==sign(p.dx) then
-    -- flatten
-    self:setang(self.ang-1)
-   else
-    -- raise
-    self:setang(self.ang+1)
+  if g.pu==6 then
+   self.stick=true
+  else
+   self.speed.y=-self.speed.y
+   self.pos.y=p.box.y-self.size
+   if abs(p.dx)>2 then
+    if sign(self.speed.x)==sign(p.dx) then
+     -- flatten
+     self:setang(self.ang-1)
+    else
+     -- raise
+     self:setang(self.ang+1)
+    end
    end
   end
   sfx(1)
@@ -271,6 +278,7 @@ function ball:collide(b)
  if self.pos.x+self.size<b.x then
   return false
  end
+ self.stick_x=self.pos.x
  return true
 end
 
@@ -300,19 +308,22 @@ function paddle:new(box,ax,f,col)
 end
 
 function paddle:update()
- local b=false
+ local a=false
  if btn(0) then
   self.dx-=self.ax
-  b=true
+  a=true
  end
  if btn(1) then
   self.dx+=self.ax
-  b=true
+  a=true
  end
- if not b then
+ if not a then
   self.dx/=self.f
  end
  self.box.x+=self.dx
+ if b.stick then
+  b.stick_x+=self.dx
+ end
  self:chk_border()
 end
 
@@ -367,13 +378,10 @@ end
 function gm:set_powerup(p)
   printh("powerup: "..p)
   if p==5 then
-   g.lives+=1
-  end
-  if p==6 then
-   b.stick=true
+   self.lives+=1
   end
   self.pu=p
-  add(g.act, cocreate(
+  add(self.act, cocreate(
   function()
    for i=1,pu_type[self.pu][t] do
     for j=1,60 do
@@ -393,7 +401,7 @@ function gm:miss()
   self.state="lost"
  else
   w.pi={}
-  self.pu={}
+  self.pu=nil
   kick()
  end
 end
@@ -504,7 +512,7 @@ end
 pu_type = {
 	[4] ={[t]=10},
 	[5] ={[t]=0},
-	[6] ={[t]=0},
+	[6] ={[t]=10},
 	[7] ={[t]=0},
 	[8] ={[t]=0},
 	[9] ={[t]=0},
@@ -671,7 +679,8 @@ function hit_p(b)
  add(w.pi,pill:new(
   vector:new(b.box.x,b.box.y),
   vector:new(0,0.4),
-  flr(rnd(7))+4)) -- 4..10
+  --flr(rnd(7))+4)) -- 4..10
+  6))
 end
 
 brick_types={
