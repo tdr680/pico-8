@@ -257,9 +257,13 @@ function ball:chk_brick(b)
  if b.a then
 	 if self:collide(b.box) then
 	  b.t.hit(b)
-  	if not h then
-	   self.speed.y=-self.speed.y
-	  end
+    if g.pu == 9 then -- and b is not indestructible
+     -- megaball
+    else
+  	 if not h then
+	    self.speed.y=-self.speed.y
+	   end
+    end
 	  h=true
 	 end
  end
@@ -384,7 +388,11 @@ end
 
 function gm:set_powerup(p)
   printh("powerup: "..p)
-  if p==5 then
+  if p==4 then
+    b.speed.x/=2
+    b.speed.y/=2
+   end
+   if p==5 then
    self.lives+=1
   end
   self.pu=p
@@ -396,6 +404,10 @@ function gm:set_powerup(p)
     end
    end
    printh("powerdown: "..p)
+   if p==4 then
+    b.speed.x*=2
+    b.speed.y*=2
+   end 
    self.pu=nil
   end
   ))
@@ -416,6 +428,9 @@ end
 gm.plan={
 -- 1
 {
+  { 1,1,1,1,1,1,1,1,1,1,1,1,1,},
+  { 1,1,1,1,1,1,1,1,1,1,1,1,1,},
+  { 1,1,1,1,1,1,1,1,1,1,1,1,1,},
   { 5,5,5,5,5,5,5,5,5,5,5,5,5,},
 --{ 4,4,4,4,4,4,4,4,4,4,4,4,4,},
 --{ 1,1,1,1,1,1,4,1,1,1,1,1,1,},
@@ -479,13 +494,14 @@ end
 function pill:update()
  self.pos:add(self.speed)
  if self.pos.y>128 then
-  self.a=false
+  --self.a=false
+  del(w.pi,self)
  end
  self:chk_paddle()
 end
 
 function pill:draw()
- if self.a then
+ --if self.a then
   if self.s==8 then
    palt(0,false)
    palt(15,true)
@@ -493,16 +509,17 @@ function pill:draw()
   spr(self.s,self.pos.x,self.pos.y)
   palt() 
  end
-end
+--end
 
 function pill:chk_paddle()
- if self.a then
+ --if self.a then
   if box:new(self.pos.x,
              self.pos.y,
              8,6):collide(p.box) then
-   self.a=false
+   --self.a=false
    sfx(10)
    g:set_powerup(self.s)
+   del(w.pi,self)
    --[[
    4  slowdown
    5  life
@@ -513,7 +530,7 @@ function pill:chk_paddle()
    10 multiball
    ]]--
   end
- end   
+ --end   
 end
 
 pu_type = {
@@ -522,7 +539,7 @@ pu_type = {
 	[6] ={[t]=10},
 	[7] ={[t]=10},
 	[8] ={[t]=10},
-	[9] ={[t]=0},
+	[9] ={[t]=10},
  [10]={[t]=0},
 }
 
@@ -691,7 +708,7 @@ function hit_p(b)
   vector:new(b.box.x,b.box.y),
   vector:new(0,0.4),
   --flr(rnd(7))+4)) -- 4..10
-  8))
+  9))
 end
 
 brick_types={
