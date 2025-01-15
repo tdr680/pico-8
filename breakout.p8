@@ -501,36 +501,31 @@ function pill:update()
 end
 
 function pill:draw()
- --if self.a then
-  if self.s==8 then
-   palt(0,false)
-   palt(15,true)
-  end
-  spr(self.s,self.pos.x,self.pos.y)
-  palt() 
+ if self.s==8 then
+  palt(0,false)
+  palt(15,true)
  end
---end
+ spr(self.s,self.pos.x,self.pos.y)
+ palt() 
+end
 
 function pill:chk_paddle()
- --if self.a then
-  if box:new(self.pos.x,
-             self.pos.y,
-             8,6):collide(p.box) then
-   --self.a=false
-   sfx(10)
-   g:set_powerup(self.s)
-   del(w.pi,self)
-   --[[
-   4  slowdown
-   5  life
-   6  catch
-   7  expand
-   8  reduce
-   9  megaball
-   10 multiball
-   ]]--
-  end
- --end   
+ if box:new(self.pos.x,
+            self.pos.y,
+            8,6):collide(p.box) then
+  sfx(10)
+  g:set_powerup(self.s)
+  del(w.pi,self)
+  --[[
+  4  slowdown
+  5  life
+  6  catch
+  7  expand
+  8  reduce
+  9  megaball
+  10 multiball
+  ]]--
+ end
 end
 
 pu_type = {
